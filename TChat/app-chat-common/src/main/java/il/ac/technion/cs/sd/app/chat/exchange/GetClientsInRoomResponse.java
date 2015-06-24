@@ -1,8 +1,10 @@
 package il.ac.technion.cs.sd.app.chat.exchange;
 
-import java.util.Set;
-
 import il.ac.technion.cs.sd.app.chat.ExchangeVisitor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -10,14 +12,14 @@ import il.ac.technion.cs.sd.app.chat.ExchangeVisitor;
  */
 public class GetClientsInRoomResponse implements Exchange {
 	
-	public final Set<String> clients;
+	public final List<String> clients;
 	
 	/**
 	 * Create a new GetClientsInRoomResponse
 	 * @param clients the clients in the requested room.
 	 */
-	GetClientsInRoomResponse(Set<String> clients) {
-		this.clients = clients;
+	GetClientsInRoomResponse(Collection<String> clients) {
+		this.clients = new ArrayList<String>(clients);
 	}
 
 	@Override

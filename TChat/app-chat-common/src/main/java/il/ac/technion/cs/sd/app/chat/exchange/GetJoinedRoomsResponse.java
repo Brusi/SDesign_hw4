@@ -1,11 +1,10 @@
 package il.ac.technion.cs.sd.app.chat.exchange;
 
+import il.ac.technion.cs.sd.app.chat.ExchangeVisitor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import il.ac.technion.cs.sd.app.chat.ExchangeVisitor;
 
 /**
  * The server's response to GetJoinedRoomsRequest
