@@ -14,7 +14,7 @@ public class ServerCommunicationsLibraryUnitTests {
 
 	private final BlockingQueue<String>	incomingMessages	= new LinkedBlockingQueue<>();
 	private ReliableMessenger mockMessenger= Mockito.mock(ReliableMessenger.class);
-	private ServerCommunicationsLibrary serverLibrary= new ServerCommunicationsLibrary("server", x-> incomingMessages.add(x));
+	private ServerCommunicationsLibrary serverLibrary= new ServerCommunicationsLibrary("server");
 
 	@Before
 	public void setUp(){
@@ -30,7 +30,7 @@ public class ServerCommunicationsLibraryUnitTests {
 	
 	@Test(expected= RuntimeException.class)
 	public void serverLibraryThrowsRuntimeExceptionWhenTryingToStartWhileAlreadyStarted() {
-		serverLibrary.start();
+		serverLibrary.start((sender, x)-> incomingMessages.add(x));
 	}
 	
 	@Test

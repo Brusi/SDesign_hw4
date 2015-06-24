@@ -53,20 +53,20 @@ public class ServerCommunicationsLibrary {
 	/**
 	 * creates a new instance of ServerCommunicationsLibrary
 	 * @param serverAddress the address of the server
-	 * @param action a consumer supplied by the application which handles the received messages
 	 */
-	public ServerCommunicationsLibrary(String serverAddress, BiConsumer<String, String> action) {
+	public ServerCommunicationsLibrary(String serverAddress) {
 		this.serverAddress = serverAddress;
-		applicationAction = action;
 		requestQueue= new LinkedBlockingQueue<Message>();
 		isStopped= true;
 	}
 	
 	/**
 	 * start the server library. initializes messenger and starts the thread that polls
-	 * the request queue  
+	 * the request queue
+	 * @param action a consumer supplied by the application which handles the received messages  
 	 */
-	public void start(){
+	public void start(BiConsumer<String, String> action){
+		applicationAction = action;
 		if(!isStopped){
 			throw new RuntimeException("tried to start communications library while already running");
 		}
