@@ -116,7 +116,7 @@ public class ServerCommunicationsLibrary {
 	 * @param target target sends the message to this user
 	 * @param payload the payload that is sent
 	 */
-	public void Send(String target, String payload) {
+	public void send(String target, String payload) {
 		if (isStopped){
 			throw new RuntimeException("tried to send message while library stopped");
 		}
@@ -130,7 +130,7 @@ public class ServerCommunicationsLibrary {
 	 * @param target sends the message to this user
 	 * @param payload the payload that is sent
 	 */
-	public void SendReply(String target, String payload) {
+	public void sendReply(String target, String payload) {
 		if (isStopped){
 			throw new RuntimeException("tried to send message while library stopped");
 		}
