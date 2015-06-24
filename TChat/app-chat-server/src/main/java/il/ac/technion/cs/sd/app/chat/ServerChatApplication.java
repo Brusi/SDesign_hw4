@@ -1,11 +1,31 @@
 package il.ac.technion.cs.sd.app.chat;
 
+import java.util.function.Function;
+
+import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
+import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.ConnectRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.DisconnectRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
+import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.JoinRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.LeaveRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
+
 
 /**
  * The server side of the TMail application. <br>
  * This class is mainly used in our tests to start, stop, and clean the server
  */
 public class ServerChatApplication {
+	
+	final public ServerData data;
 	
     /**
      * Starts a new mail server. Servers with the same name retain all their information until
@@ -15,6 +35,8 @@ public class ServerChatApplication {
      */
 
 	public ServerChatApplication(String string) {
+		data = new ServerData();
+		
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -46,5 +68,146 @@ public class ServerChatApplication {
 	 */
 	public void clean() {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	
+	/**
+	 * Send an announcement to all the client's rooms. The announcement may be
+	 * different for each room, and is defined by the function roomAnnouncement,
+	 * which maps room name too the the appropriate announcement.
+	 * 
+	 * @param client the client to send the announcement to all its rooms.
+	 * @param roomAnnouncementMap a function that maps the room name to the wanted announcement.
+	 */
+	private void announceInAllClientRooms(String client, Function<String, AnnouncementRequest> roomAnnouncementMap) {
+		for (String room : data.getRoomsOfClient(client)) {
+			broadcastToRoom(room, roomAnnouncementMap.apply(room));
+		}
+	}
+	
+	/**
+	 * Broadcast an exchange to all (online) members of a room.
+	 * @param room the room to send the message to its members.
+	 * @param exchange the message to send.
+	 */
+	private void broadcastToRoom(String room, Exchange exchange) {
+		for (String client : data.getClientsInRoom(room)) {
+			sendIfOnline(client, exchange);
+		}
+	}
+	
+	/**
+	 * Send an exchange to the client if it is online. Otherwise, discard the message.
+	 * @param client the client to send the message to.
+	 * @param exchange the message to send.
+	 */
+	private void sendIfOnline(String client, Exchange exchange) {
+		if (!data.isClientConnected(client)) {
+			return;
+		}
+		// TODO: send to client via inner connection.
+	}
+	
+	private class Visitor implements ExchangeVisitor {
+		
+		final private String client;
+
+		Visitor(String client) {
+			this.client = client;
+		}
+		
+		@Override
+		public void visit(ConnectRequest request) {
+			data.connectClient(client);
+			announceInAllClientRooms(client, room -> new AnnouncementRequest(
+					new RoomAnnouncement(client, room, Announcement.JOIN)));
+		}
+
+		@Override
+		public void visit(DisconnectRequest request) {
+			data.disconnectClient(client);
+			announceInAllClientRooms(client, room -> new AnnouncementRequest(
+					new RoomAnnouncement(client, room, Announcement.DISCONNECT)));
+		}
+
+		@Override
+		public void visit(SendMessageRequest request) {
+			// If the client is not in the requested room, return that the sending has failed.
+			if (!data.isClientInRoom(client, request.room)) {
+				sendIfOnline(client, OperationResponse.FAILURE);
+				return;
+			}
+			// Broadcast message to all room members.
+			broadcastToRoom(request.room, request);	
+			// Send a successful response to the client.
+			sendIfOnline(client, OperationResponse.SUCCESS);
+		}
+		
+		@Override
+		public void visit(JoinRoomRequest request) {
+			// If the client is already in the room, return failure.
+			if (data.isClientInRoom(client, request.room)) {
+				sendIfOnline(client, OperationResponse.FAILURE);
+				return;
+			}
+			data.joinRoom(client, request.room);
+			sendIfOnline(client, OperationResponse.SUCCESS);
+			broadcastToRoom(request.room, new AnnouncementRequest(
+					new RoomAnnouncement(client, request.room,Announcement.JOIN)));
+		}
+
+		@Override
+		public void visit(LeaveRoomRequest request) {
+			// If the client is not in the room, return failure.
+			if (!data.isClientInRoom(client, request.room)) {
+				sendIfOnline(client, OperationResponse.FAILURE);
+				return;
+			}
+			data.leaveRoom(client, request.room);
+			sendIfOnline(client, OperationResponse.SUCCESS);
+			broadcastToRoom(request.room, new AnnouncementRequest(
+					new RoomAnnouncement(client, request.room, Announcement.LEAVE)));
+		}
+
+		@Override
+		public void visit(OperationResponse response) {
+			throw new UnsupportedOperationException("The server should not get an OperationResponse.");
+		}
+
+		@Override
+		public void visit(GetJoinedRoomsRequest request) {
+			sendIfOnline(client, new GetJoinedRoomsResponse(data.getRoomsOfClient(client)));
+		}
+
+		@Override
+		public void visit(GetJoinedRoomsResponse response) {
+			throw new UnsupportedOperationException("The server should not get a GetJoinedRoomsResponse.");
+			
+		}
+
+		@Override
+		public void visit(GetAllRoomsRequest request) {
+			sendIfOnline(client, new GetAllRoomsResponse(data.getActiveRooms()));
+		}
+
+		@Override
+		public void visit(GetAllRoomsResponse response) {
+			throw new UnsupportedOperationException("The server should not get a GetAllRoomsResponse.");
+		}
+
+		@Override
+		public void visit(GetClientsInRoomRequest request) {
+			sendIfOnline(client, new GetAllRoomsResponse(data.getClientsInRoom(request.room)));
+		}
+
+		@Override
+		public void visit(GetClientsInRoomResponse response) {
+			throw new UnsupportedOperationException("The server should not get a GetClientsInRoomResponse.");			
+		}
+
+		@Override
+		public void visit(AnnouncementRequest request) {
+			throw new UnsupportedOperationException("The server should not get an AnnouncementRequest.");
+		}
 	}
 }
