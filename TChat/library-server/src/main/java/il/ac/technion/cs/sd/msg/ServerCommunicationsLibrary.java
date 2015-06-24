@@ -4,6 +4,7 @@ import il.ac.technion.cs.sd.msg.Message.MessageType;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -16,7 +17,7 @@ public class ServerCommunicationsLibrary {
 	private String serverAddress;
 	private BlockingQueue<Message> requestQueue;
 	private ReliableMessenger messenger;
-	private Consumer<String> applicationAction;
+	private BiConsumer<String, String> applicationAction;
 	private volatile boolean isStopped;
 	private Thread pollingThread;
 	
@@ -42,7 +43,7 @@ public class ServerCommunicationsLibrary {
 		while(!isStopped){
 			try{
 				Message msg= requestQueue.take();
-				applicationAction.accept(msg.getContent());
+				applicationAction.accept(msg.getFrom(), msg.getContent());
 			}
 			catch(Exception e){
 			}
@@ -54,7 +55,7 @@ public class ServerCommunicationsLibrary {
 	 * @param serverAddress the address of the server
 	 * @param action a consumer supplied by the application which handles the received messages
 	 */
-	public ServerCommunicationsLibrary(String serverAddress, Consumer<String> action) {
+	public ServerCommunicationsLibrary(String serverAddress, BiConsumer<String, String> action) {
 		this.serverAddress = serverAddress;
 		applicationAction = action;
 		requestQueue= new LinkedBlockingQueue<Message>();
