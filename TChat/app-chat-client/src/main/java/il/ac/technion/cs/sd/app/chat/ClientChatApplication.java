@@ -1,6 +1,24 @@
 package il.ac.technion.cs.sd.app.chat;
 
+import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.ConnectRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.DisconnectRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
+import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.JoinRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.LeaveRoomRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 
 /**
@@ -10,6 +28,36 @@ import java.util.function.Consumer;
  */
 public class ClientChatApplication {
 
+	// INSTANCE MEMBERS
+	private final String myUsername;
+	private final String myServerAddress;
+	private Consumer<ChatMessage> chatMessageConsumer;
+	private Consumer<RoomAnnouncement> announcementConsumer;
+	private final Semaphore loginResponseSemaphore;
+	private final Semaphore responseSemaphore;
+	private final Codec<Exchange> myCodec;
+	private List<String> rooms;
+	
+	private void notNullOrEmpty(String s) {
+		if (null == s || "".equals(s)) {
+			throw new IllegalArgumentException();
+		}
+	}
+	
+
+	private void syncSend(Exchange e, Semaphore sem) {
+		String requestStr = myCodec.encode(e);
+		connection.send(requestStr);
+		
+		try {
+			// Wait until login is responded and all pending messages handled.
+			sem.acquire();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
 	/**
 	 * Creates a new application, tied to a single user
 	 * 
@@ -19,7 +67,17 @@ public class ClientChatApplication {
 	 *            using this object
 	 */
 	public ClientChatApplication(String serverAddress, String username) {
-		throw new UnsupportedOperationException("Not implemented");
+		notNullOrEmpty(username);
+		notNullOrEmpty(serverAddress);
+		
+		this.myUsername = username;
+		this.myServerAddress = serverAddress;
+		
+		// TODO init a library connection
+		
+		this.loginResponseSemaphore = new Semaphore(0);
+		this.responseSemaphore = new Semaphore(0);
+		this.myCodec = new XStreamCodec<Exchange>();
 	}
 
 	/**
@@ -34,7 +92,15 @@ public class ClientChatApplication {
 	 */
 	public void login(Consumer<ChatMessage> chatMessageConsumer,
 			Consumer<RoomAnnouncement> announcementConsumer) {
-		throw new UnsupportedOperationException("Not implemented");
+
+		if (null == chatMessageConsumer || null == announcementConsumer) {
+			throw new IllegalArgumentException("consumers can't be empty");
+		}
+		
+		this.chatMessageConsumer = chatMessageConsumer;
+		this.announcementConsumer = announcementConsumer;
+		
+		syncSend(new ConnectRequest(), loginResponseSemaphore);
 	}
 
 	/**
@@ -45,6 +111,7 @@ public class ClientChatApplication {
 	 */
 	public void joinRoom(String room) throws AlreadyInRoomException {
 		throw new UnsupportedOperationException("Not implemented");
+		// TODO implement
 	}
 
 	/**
@@ -54,6 +121,7 @@ public class ClientChatApplication {
 	 */
 	public void leaveRoom(String room) throws NotInRoomException {
 		throw new UnsupportedOperationException("Not implemented");
+		// TODO implement
 	}
 
 	/**
@@ -62,6 +130,7 @@ public class ClientChatApplication {
 	 */
 	public void logout() {
 		throw new UnsupportedOperationException("Not implemented");
+		// TODO implement
 	}
 
 	/**
@@ -71,22 +140,28 @@ public class ClientChatApplication {
 	 * @throws NotInRoomException If the client isn't currently in the room
 	 */
 	public void sendMessage(String room, String what) throws NotInRoomException {
-		throw new UnsupportedOperationException("Not implemented");
+		ChatMessage msg = new ChatMessage(myUsername, room, what);
+		SendMessageRequest request = new SendMessageRequest(msg, room);
+		String requestStr = myCodec.encode(request);
+		connection.send(requestStr); // TODO make sure there is no need to explicitly wait for ACK
 	}
 
 	/**
 	 * @return All the rooms the client joined
 	 */
 	public List<String> getJoinedRooms() {
-		throw new UnsupportedOperationException("Not implemented");
+		syncSend(new GetJoinedRoomsRequest(), responseSemaphore);
+		return new ArrayList<String>(this.rooms);
 	}
 
 	/**
 	 * @return all rooms that have clients currently online, i.e., logged in
 	 */
 	public List<String> getAllRooms() {
-		throw new UnsupportedOperationException("Not implemented");
+		syncSend(new GetAllRoomsRequest(), responseSemaphore);
+		return new ArrayList<String>(this.rooms);
 	}
+
 	
 	/**
 	 * Gets all the clients that joined the room and are currently logged in. A client
@@ -97,6 +172,7 @@ public class ClientChatApplication {
 	 */
 	public List<String> getClientsInRoom(String room) throws NoSuchRoomException {
 		throw new UnsupportedOperationException("Not implemented");
+		// TODO implement
 	}
 
 	/**
@@ -106,6 +182,80 @@ public class ClientChatApplication {
 	 */
 	public void stop() {
 		throw new UnsupportedOperationException("Not implemented");
+		// TODO implement
 	}
 
+	
+	class Visitor implements ExchangeVisitor {
+
+		@Override
+		public void visit(ConnectRequest request) {
+			 throw new UnsupportedOperationException("The client should not get ConnectRequest.");
+		}
+
+		@Override
+		public void visit(DisconnectRequest request) {
+			throw new UnsupportedOperationException("The client should not get DisconnectRequest.");			
+		}
+
+		@Override
+		public void visit(SendMessageRequest request) {
+			chatMessageConsumer.accept(request.message);
+		}
+
+		@Override
+		public void visit(JoinRoomRequest request) {
+			throw new UnsupportedOperationException("The client should not get JoinRoomRequest.");			
+		}
+
+		@Override
+		public void visit(LeaveRoomRequest request) {
+			throw new UnsupportedOperationException("The client should not get LeaveRoomRequest.");
+		}
+
+		@Override
+		public void visit(OperationResponse response) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void visit(GetJoinedRoomsRequest request) {
+			throw new UnsupportedOperationException("The client should not get GetJoinedRoomsRequest.");			
+		}
+
+		@Override
+		public void visit(GetJoinedRoomsResponse response) {
+			rooms = response.joinedRooms;
+			responseSemaphore.release();
+		}
+
+		@Override
+		public void visit(GetAllRoomsRequest request) {
+			throw new UnsupportedOperationException("The client should not get GetAllRoomsRequest.");			
+		}
+
+		@Override
+		public void visit(GetAllRoomsResponse response) {
+			rooms = response.allRooms;
+			responseSemaphore.release();
+		}
+
+		@Override
+		public void visit(GetClientsInRoomRequest request) {
+			throw new UnsupportedOperationException("The client should not get GetClientsInRoomRequest.");			
+		}
+
+		@Override
+		public void visit(GetClientsInRoomResponse response) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void visit(AnnouncementRequest request) {
+			announcementConsumer.accept(request.announcement);
+		}
+		
+	}
 }
