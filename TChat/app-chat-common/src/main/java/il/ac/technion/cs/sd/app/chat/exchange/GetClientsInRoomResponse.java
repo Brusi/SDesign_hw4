@@ -18,7 +18,7 @@ public class GetClientsInRoomResponse implements Exchange {
 	 * Create a new GetClientsInRoomResponse
 	 * @param clients the clients in the requested room.
 	 */
-	GetClientsInRoomResponse(Collection<String> clients) {
+	public GetClientsInRoomResponse(Collection<String> clients) {
 		this.clients = new ArrayList<String>(clients);
 	}
 

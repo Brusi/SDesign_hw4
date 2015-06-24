@@ -131,7 +131,8 @@ public class ServerChatApplication {
 		if (!data.isClientConnected(client)) {
 			return;
 		}
-		connection.Send(client, codec.encode(exchange));
+		System.out.println(codec.encode(exchange));
+		connection.send(client, codec.encode(exchange));
 	}
 	
 	private class Visitor implements ExchangeVisitor {
@@ -161,12 +162,12 @@ public class ServerChatApplication {
 		@Override
 		public void visit(SendMessageRequest request) {
 			// If the client is not in the requested room, return that the sending has failed.
-			if (!data.isClientInRoom(client, request.room)) {
+			if (!data.isClientInRoom(client, request.message.room)) {
 				sendIfOnline(client, OperationResponse.FAILURE);
 				return;
 			}
 			// Broadcast message to all room members.
-			broadcastToRoom(request.room, request);	
+			broadcastToRoom(request.message.room, request);	
 			// Send a successful response to the client.
 			sendIfOnline(client, OperationResponse.SUCCESS);
 		}
@@ -225,7 +226,7 @@ public class ServerChatApplication {
 
 		@Override
 		public void visit(GetClientsInRoomRequest request) {
-			sendIfOnline(client, new GetAllRoomsResponse(data.getClientsInRoom(request.room)));
+			sendIfOnline(client, new GetClientsInRoomResponse(data.getClientsInRoom(request.room)));
 		}
 
 		@Override
