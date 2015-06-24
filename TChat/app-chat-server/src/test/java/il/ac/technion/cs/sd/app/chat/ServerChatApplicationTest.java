@@ -120,7 +120,44 @@ public class ServerChatApplicationTest {
 		sendToServer("Shaul", request);
 
 		String expected = codec.encode(request);
-		Mockito.verify(connection).send("Shaul", expected);
+		Mockito.verify(connection).send("David", expected);
+	}
+	
+	
+	@Test
+	public void MessageIsSentToSeveralClientsInRoom() {
+		sendToServer("David", new ConnectRequest());
+		sendToServer("Shaul", new ConnectRequest());
+		sendToServer("Shlomo", new ConnectRequest());
+		
+		sendToServer("David", new JoinRoomRequest("Kings"));
+		sendToServer("Shaul", new JoinRoomRequest("Kings"));
+		sendToServer("Shlomo", new JoinRoomRequest("Kings"));
+		
+		sendToServer("Shaul", new SendMessageRequest(new ChatMessage("Shaul", "Kings", "We kings!")));
+
+		Exchange request = new SendMessageRequest(new ChatMessage("Shaul", "Kings", "We kings!"));
+		sendToServer("Shaul", request);
+
+		String expected = codec.encode(request);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send("David", expected);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send("Shlomo", expected);
+	}
+	
+	@Test
+	public void AnnouncementIsSentToSeveralClientsInRoom() {
+		sendToServer("David", new ConnectRequest());
+		sendToServer("Shaul", new ConnectRequest());
+		sendToServer("Shlomo", new ConnectRequest());
+		
+		sendToServer("David", new JoinRoomRequest("Kings"));
+		sendToServer("Shaul", new JoinRoomRequest("Kings"));
+		sendToServer("Shlomo", new JoinRoomRequest("Kings"));
+		
+		String expected = codec.encode(new AnnouncementRequest(
+				new RoomAnnouncement("Shlomo", "Kings", Announcement.JOIN)));
+		Mockito.verify(connection, Mockito.atLeastOnce()).send("David", expected);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send("Shaul", expected);
 	}
 	
 	@Test
@@ -255,7 +292,7 @@ public class ServerChatApplicationTest {
 	}
 	
 	@Test
-	public void testGetClientsInNonExistentRoom() {
+	public void GetClientsInNonExistentRoomReturnsEmptySet() {
 		sendToServer("David", new ConnectRequest());
 		
 		sendToServer("David", new JoinRoomRequest("Kings"));
@@ -272,4 +309,5 @@ public class ServerChatApplicationTest {
 		GetClientsInRoomResponse response = (GetClientsInRoomResponse) codec.decode(argument.getValue());
 		assertEquals(0, response.clients.size());
 	}
+
 }
