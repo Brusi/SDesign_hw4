@@ -51,7 +51,7 @@ public class ClientChatApplication {
 
 	private void syncSend(Exchange ex) {
 		this.connection.send(myCodec.encode(ex));
-		
+
 		try {
 			// Wait until login is responded and all pending messages handled.
 			responseSemaphore.acquire();
@@ -66,6 +66,30 @@ public class ClientChatApplication {
 		}
 	}
 	
+	// TODO update doc with connection argument
+	/**
+	 * Creates a new application, tied to a single user
+	 * 
+	 * @param serverAddress The address of the server to connect to for sending and
+	 *            receiving messages
+	 * @param username The username that will be sending and accepting the messages
+	 *            using this object
+	 */
+	public ClientChatApplication(String serverAddress, String username, ClientCommunicationsLibrary connection) {
+		assertNotNullOrEmpty(username);
+		assertNotNullOrEmpty(serverAddress);
+		
+		this.myUsername = username;
+		this.myServerAddress = serverAddress;
+		this.connection = connection;
+		
+		this.responseSemaphore = new Semaphore(0);
+		this.myCodec = new XStreamCodec<Exchange>();
+	}
+	
+	
+	
+	
 	/**
 	 * Creates a new application, tied to a single user
 	 * 
@@ -75,14 +99,7 @@ public class ClientChatApplication {
 	 *            using this object
 	 */
 	public ClientChatApplication(String serverAddress, String username) {
-		assertNotNullOrEmpty(username);
-		assertNotNullOrEmpty(serverAddress);
-		
-		this.myUsername = username;
-		this.myServerAddress = serverAddress;
-		
-		this.responseSemaphore = new Semaphore(0);
-		this.myCodec = new XStreamCodec<Exchange>();
+		this(serverAddress, username, null);
 	}
 
 	/**
@@ -109,7 +126,7 @@ public class ClientChatApplication {
 			this.connection = new ClientCommunicationsLibrary(myServerAddress, myUsername, s -> handleIncoming(s));
 		}
 		
-		syncSend(new ConnectRequest());
+		this.connection.send(myCodec.encode(new ConnectRequest()));
 		this.isLoggedIn = true;
 	}
 
@@ -180,7 +197,7 @@ public class ClientChatApplication {
 		assertNotNullOrEmpty(what); // TODO validate in piazza, that "" is invalid message
 		
 		ChatMessage msg = new ChatMessage(myUsername, room, what);
-		SendMessageRequest request = new SendMessageRequest(msg, room);
+		SendMessageRequest request = new SendMessageRequest(msg);
 		
 		connection.send(myCodec.encode(request));
 	}
@@ -218,6 +235,11 @@ public class ClientChatApplication {
 		assertNotNullOrEmpty(room);
 		
 		syncSend(new GetClientsInRoomRequest(room));
+		
+		if (this.clients.isEmpty()) {
+			throw new NoSuchRoomException();
+		}
+		
 		return new ArrayList<String>(this.clients);
 	}
 
