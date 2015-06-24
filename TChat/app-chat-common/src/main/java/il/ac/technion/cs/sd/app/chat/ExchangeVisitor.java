@@ -24,7 +24,9 @@ public interface ExchangeVisitor {
 	 * Accept and handle ConnectRequest.
 	 * @param request the ConnectRequest to handle.
 	 */
-	void visit(ConnectRequest request);
+	default void visit(ConnectRequest request) {
+		throw new UnsupportedOperationException("Not implemented, or should not be possible for this communication side");
+	};
 	
 	/**
 	 * Accept and handle DisconnectRequest.
@@ -42,59 +44,59 @@ public interface ExchangeVisitor {
 	 * Accept and handle JoinRoomRequest.
 	 * @param request the JoinRoomRequest to handle.
 	 */
-	void visit(JoinRoomRequest joinRoomRequest);
+	void visit(JoinRoomRequest request);
 	
 	/**
 	 * Accept and handle LeaveRoomRequest.
 	 * @param request the LeaveRoomRequest to handle.
 	 */
-	void visit(LeaveRoomRequest leaveRoomRequest);
+	void visit(LeaveRoomRequest request);
 
 	/**
 	 * Accept and handle OperationResponse.
 	 * @param request the OperationResponse to handle.
 	 */
-	void visit(OperationResponse joinRoomResponse);
+	void visit(OperationResponse response);
 
 	/**
 	 * Accept and handle GetJoinedRoomsRequest.
 	 * @param request the GetJoinedRoomsRequest to handle.
 	 */
-	void visit(GetJoinedRoomsRequest getJoinedRoomsRequest);
+	void visit(GetJoinedRoomsRequest request);
 
 	/**
 	 * Accept and handle GetJoinedRoomsResponse.
 	 * @param request the GetJoinedRoomsResponse to handle.
 	 */
-	void visit(GetJoinedRoomsResponse getJoinedRoomsResponse);
+	void visit(GetJoinedRoomsResponse response);
 
 	/**
 	 * Accept and handle GetAllRoomsRequest.
 	 * @param request the GetAllRoomsRequest to handle.
 	 */
-	void visit(GetAllRoomsRequest getAllRoomsRequest);
+	void visit(GetAllRoomsRequest request);
 	
 	/**
 	 * Accept and handle GetAllRoomsResponse.
 	 * @param request the GetAllRoomsResponse to handle.
 	 */
-	void visit(GetAllRoomsResponse getAllRoomsRequest);
+	void visit(GetAllRoomsResponse response);
 
 	/**
 	 * Accept and handle GetClientsInRoomRequest.
 	 * @param request the GetClientsInRoomRequest to handle.
 	 */
-	void visit(GetClientsInRoomRequest getClientsInRoomRequest);
+	void visit(GetClientsInRoomRequest request);
 
 	/**
 	 * Accept and handle GetClientsInRoomResponse.
 	 * @param request the GetClientsInRoomResponse to handle.
 	 */
-	void visit(GetClientsInRoomResponse getClientsInRoomResponse);
+	void visit(GetClientsInRoomResponse response);
 
 	/**
 	 * Accept and handle AnnouncementRequest.
 	 * @param request the AnnouncementRequest to handle.
 	 */
-	void visit(AnnouncementRequest announcementRequest);
+	void visit(AnnouncementRequest request);
 }
