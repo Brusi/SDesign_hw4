@@ -17,6 +17,7 @@ import il.ac.technion.cs.sd.app.chat.exchange.JoinRoomRequest;
 import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
 import il.ac.technion.cs.sd.app.chat.exchange.LeaveRoomRequest;
 import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
+import il.ac.technion.cs.sd.msg.ServerCommunicationsLibrary;
 
 
 /**
@@ -25,7 +26,11 @@ import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
  */
 public class ServerChatApplication {
 	
-	final public ServerData data;
+	final private ServerData data;
+	final private String serverAddress;
+	final static private Codec<Exchange> codec = new XStreamCodec<Exchange>();
+	
+	private ServerCommunicationsLibrary connection;
 	
     /**
      * Starts a new mail server. Servers with the same name retain all their information until
@@ -34,17 +39,16 @@ public class ServerChatApplication {
      * @param name The name of the server by which it is known.
      */
 
-	public ServerChatApplication(String string) {
+	public ServerChatApplication(String name) {
 		data = new ServerData();
-		
-		throw new UnsupportedOperationException("Not implemented");
+		serverAddress = name;
 	}
 	
 	/**
 	 * @return the server's address; this address will be used by clients connecting to the server
 	 */
 	public String getAddress() {
-		throw new UnsupportedOperationException("Not implemented");
+		return serverAddress;
 	}
 	
 	/**
@@ -52,14 +56,35 @@ public class ServerChatApplication {
 	 * This should be a <b>non-blocking</b> call.
 	 */
 	public void start() {
-		throw new UnsupportedOperationException("Not implemented");
+		this.connection = new ServerCommunicationsLibrary(serverAddress);
+		startConnection();
+	}
+	
+	/**
+	 * Starts the server app using a mock communication library. Used for unit testing.
+	 * @param mockConnection
+	 */
+	void startWithMockConnection(ServerCommunicationsLibrary mockConnection) {
+		this.connection = mockConnection; 
+		startConnection();
+	}
+	
+	/**
+	 * Start the inner connection, providing it a consumer to decode and handle messages.
+	 */
+	private void startConnection() {
+		this.connection.start((sender, payload) -> {
+			Exchange exchange = codec.decode(payload);
+			exchange.accept(new Visitor(sender));
+		});
 	}
 	
 	/**
 	 * Stops the server. A stopped server can't accept messages, but doesn't delete any data (messages that weren't received).
 	 */
 	public void stop() {
-		throw new UnsupportedOperationException("Not implemented");
+		// TODO: save persistent data.
+		this.connection.stop();
 	}
 	
 	/**
@@ -67,7 +92,8 @@ public class ServerChatApplication {
 	 * run on a new, clean server. you may assume the server is stopped before this method is called.
 	 */
 	public void clean() {
-		throw new UnsupportedOperationException("Not implemented");
+		// throw new UnsupportedOperationException("Not implemented");
+		// TODO: implement.
 	}
 	
 	
@@ -79,7 +105,7 @@ public class ServerChatApplication {
 	 * @param client the client to send the announcement to all its rooms.
 	 * @param roomAnnouncementMap a function that maps the room name to the wanted announcement.
 	 */
-	private void announceInAllClientRooms(String client, Function<String, AnnouncementRequest> roomAnnouncementMap) {
+	private void announceInAllRoomsOfAClient(String client, Function<String, AnnouncementRequest> roomAnnouncementMap) {
 		for (String room : data.getRoomsOfClient(client)) {
 			broadcastToRoom(room, roomAnnouncementMap.apply(room));
 		}
@@ -105,7 +131,7 @@ public class ServerChatApplication {
 		if (!data.isClientConnected(client)) {
 			return;
 		}
-		// TODO: send to client via inner connection.
+		connection.Send(client, codec.encode(exchange));
 	}
 	
 	private class Visitor implements ExchangeVisitor {
@@ -119,15 +145,17 @@ public class ServerChatApplication {
 		@Override
 		public void visit(ConnectRequest request) {
 			data.connectClient(client);
-			announceInAllClientRooms(client, room -> new AnnouncementRequest(
+			announceInAllRoomsOfAClient(client, room -> new AnnouncementRequest(
 					new RoomAnnouncement(client, room, Announcement.JOIN)));
 		}
 
 		@Override
 		public void visit(DisconnectRequest request) {
 			data.disconnectClient(client);
-			announceInAllClientRooms(client, room -> new AnnouncementRequest(
+			announceInAllRoomsOfAClient(client, room -> new AnnouncementRequest(
 					new RoomAnnouncement(client, room, Announcement.DISCONNECT)));
+			
+			// TODO: check self announcements.
 		}
 
 		@Override
