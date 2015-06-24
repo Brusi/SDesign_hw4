@@ -14,7 +14,7 @@ public class SendMessageRequest implements Exchange {
 	 * Create a new SendMessageRequest.
 	 * @param message the message to send.
 	 */
-	public SendMessageRequest(ChatMessage message, String room) {
+	public SendMessageRequest(ChatMessage message) {
 		this.message = message;
 	}
 
