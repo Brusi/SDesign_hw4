@@ -24,9 +24,7 @@ public interface ExchangeVisitor {
 	 * Accept and handle ConnectRequest.
 	 * @param request the ConnectRequest to handle.
 	 */
-	default void visit(ConnectRequest request) {
-		throw new UnsupportedOperationException("Not implemented, or should not be possible for this communication side");
-	};
+	void visit(ConnectRequest request);
 	
 	/**
 	 * Accept and handle DisconnectRequest.
