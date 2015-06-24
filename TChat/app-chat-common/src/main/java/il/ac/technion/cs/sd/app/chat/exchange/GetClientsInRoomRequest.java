@@ -13,7 +13,7 @@ public class GetClientsInRoomRequest implements Exchange {
 	 * Create a new GetClientsInRoomRequest.
 	 * @param room the room to get the clients in.
 	 */
-	GetClientsInRoomRequest(String room) {
+	public GetClientsInRoomRequest(String room) {
 		this.room = room;
 	}
 
