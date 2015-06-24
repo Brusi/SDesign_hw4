@@ -9,16 +9,13 @@ import il.ac.technion.cs.sd.app.chat.ExchangeVisitor;
 public class SendMessageRequest implements Exchange {
 	
 	public final ChatMessage message;
-	public final String room;
 	
 	/**
 	 * Create a new SendMessageRequest.
 	 * @param message the message to send.
-	 * @param room the room to sent the message to.
 	 */
 	public SendMessageRequest(ChatMessage message, String room) {
 		this.message = message;
-		this.room = room;
 	}
 
 	@Override
