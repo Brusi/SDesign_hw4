@@ -54,19 +54,19 @@ public class ClientCommunicationsLibrary {
 	/**
 	 * Sends a message to another client via the server
 	 */
-	public void Send(String payload) {
-		SendAux(payload, MessageType.NEW_MESSAGE);
+	public void send(String payload) {
+		sendAux(payload, MessageType.NEW_MESSAGE);
 	}
 	
 	/**
 	 * Sends a message to another client via the server when the server is expecting a reply
 	 * to a previous message he sent.
 	 */
-	public void SendReply(String payload) {
-		SendAux(payload, MessageType.REPLIED_MESSAGE);
+	public void sendReply(String payload) {
+		sendAux(payload, MessageType.REPLIED_MESSAGE);
 	}
 	
-	private void SendAux(String payload, MessageType messageType) {
+	private void sendAux(String payload, MessageType messageType) {
 		if (payload == null){
 			throw new IllegalArgumentException();
 		}
@@ -78,7 +78,7 @@ public class ClientCommunicationsLibrary {
 	/**
 	 * Sends a message to another client via the server and wait for a reply from the server.
 	 */
-	public String SendAndAwaitReply(String payload) {
+	public String sendAndAwaitReply(String payload) {
 		if (payload == null){
 			throw new IllegalArgumentException();
 		}

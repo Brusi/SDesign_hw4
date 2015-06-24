@@ -23,18 +23,18 @@ public class ClientCommunicationsLibraryUnitTests {
 	
 	@Test
 	public void clientLibrarySendsMessagesToSuppliedServerAddressWithCorrectMessage() throws Exception {
-		clientLibrary.Send("Hi");
+		clientLibrary.send("Hi");
 		Mockito.verify(mockMessenger, Mockito.only()).Send("server", new Message("client", "Hi", MessageType.NEW_MESSAGE));
 	}
 	
 	@Test(expected= IllegalArgumentException.class)
 	public void SendFailsOnInvaliPayload() throws Exception {
-		clientLibrary.Send(null);
+		clientLibrary.send(null);
 	}
 	
 	@Test(expected= IllegalArgumentException.class)
 	public void SendAndAwaitReplyFailsOnInvaliPayload() throws Exception {
-		clientLibrary.SendAndAwaitReply(null);
+		clientLibrary.sendAndAwaitReply(null);
 	}
 	
 	@Test
@@ -52,6 +52,6 @@ public class ClientCommunicationsLibraryUnitTests {
 	@Test
 	public void sendAndAwaitReplyReturnsMessageContents() throws Exception {
 		Mockito.when(mockMessenger.SendAndAwaitReply("server", new Message("client", "Hi", MessageType.NEW_MESSAGE))).thenReturn("result");
-		assertEquals("result", clientLibrary.SendAndAwaitReply("Hi"));
+		assertEquals("result", clientLibrary.sendAndAwaitReply("Hi"));
 	}
 }
