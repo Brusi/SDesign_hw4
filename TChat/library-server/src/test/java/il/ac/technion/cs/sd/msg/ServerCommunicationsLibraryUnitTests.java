@@ -25,7 +25,7 @@ public class ServerCommunicationsLibraryUnitTests {
 	@Test(expected= RuntimeException.class)
 	public void serverLibraryThrowsRuntimeExceptionWhenTryingToSendWhileItIsStopped() {
 		serverLibrary.stop();
-		serverLibrary.Send("client", "hello");
+		serverLibrary.send("client", "hello");
 	}
 	
 	@Test(expected= RuntimeException.class)
@@ -52,13 +52,13 @@ public class ServerCommunicationsLibraryUnitTests {
 	
 	@Test
 	public void serverLibrarySendsCorrectNewMessageWhenSendInvoked() {
-		serverLibrary.Send("client", "hello");
+		serverLibrary.send("client", "hello");
 		Mockito.verify(mockMessenger,Mockito.only()).Send("client", new Message("server", "hello", MessageType.NEW_MESSAGE));
 	}
 	
 	@Test
 	public void serverLibrarySendsCorrectRepliedMessageWhenSendReplyInvoked() {
-		serverLibrary.SendReply("client", "hello");
+		serverLibrary.sendReply("client", "hello");
 		Mockito.verify(mockMessenger,Mockito.only()).Send("client", new Message("server", "hello", MessageType.REPLIED_MESSAGE));
 	}
 	
