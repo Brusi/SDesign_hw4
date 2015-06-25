@@ -63,6 +63,15 @@ public class ServerData {
 	boolean isClientConnected(String client) {
 		return onlineClients.contains(client);
 	}
+	
+	/**
+	 * Disconnect all logged in clients.
+	 */
+	void disconnectAllClients() {
+		while (!onlineClients.isEmpty()) {
+			disconnectClient(onlineClients.iterator().next());
+		}
+	}
 
 	/**
 	 * Mark a client as joined to a room.
@@ -142,6 +151,10 @@ public class ServerData {
 		return Collections.<String> emptySet();
 	}
 
+	/**
+	 * Get all the rooms that have at least one client connected to.
+	 * @return A set of all active rooms.
+	 */
 	Set<String> getActiveRooms() {
 		return clientsInRoom.keySet();
 	}

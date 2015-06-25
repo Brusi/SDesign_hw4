@@ -1,5 +1,6 @@
 package il.ac.technion.cs.sd.app.chat;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
@@ -26,7 +27,9 @@ import il.ac.technion.cs.sd.msg.ServerCommunicationsLibrary;
  */
 public class ServerChatApplication {
 	
-	final private ServerData data;
+	private ServerData data;
+	private DataSaver<ServerData> dataSaver;
+	
 	final private String serverAddress;
 	final static private Codec<Exchange> codec = new XStreamCodec<Exchange>();
 	
@@ -40,8 +43,8 @@ public class ServerChatApplication {
      */
 
 	public ServerChatApplication(String name) {
-		data = new ServerData();
-		serverAddress = name;
+		this.serverAddress = name;
+		this.dataSaver = new XStreamDataSaver<ServerData>(serverAddress);
 	}
 	
 	/**
@@ -58,8 +61,18 @@ public class ServerChatApplication {
 	public void start() {
 		this.connection = new ServerCommunicationsLibrary(serverAddress);
 		startConnection();
+		loadData();
 	}
 	
+	private void loadData() {
+		Optional<ServerData> loaded_data = dataSaver.load();
+		if (loaded_data.isPresent()) {
+			data = loaded_data.get();
+		} else {
+			data = new ServerData();
+		}
+	}
+
 	/**
 	 * Starts the server app using a mock communication library. Used for unit testing.
 	 * @param mockConnection
@@ -67,6 +80,7 @@ public class ServerChatApplication {
 	void startWithMockConnection(ServerCommunicationsLibrary mockConnection) {
 		this.connection = mockConnection; 
 		startConnection();
+		loadData();
 	}
 	
 	/**
@@ -83,8 +97,9 @@ public class ServerChatApplication {
 	 * Stops the server. A stopped server can't accept messages, but doesn't delete any data (messages that weren't received).
 	 */
 	public void stop() {
-		// TODO: save persistent data.
 		this.connection.stop();
+		data.disconnectAllClients();
+		dataSaver.save(data);
 	}
 	
 	/**
@@ -92,8 +107,8 @@ public class ServerChatApplication {
 	 * run on a new, clean server. you may assume the server is stopped before this method is called.
 	 */
 	public void clean() {
-		// throw new UnsupportedOperationException("Not implemented");
-		// TODO: implement.
+		data = new ServerData();
+		dataSaver.clean();
 	}
 	
 	

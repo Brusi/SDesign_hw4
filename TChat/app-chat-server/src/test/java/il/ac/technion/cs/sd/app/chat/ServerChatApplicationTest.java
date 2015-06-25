@@ -59,7 +59,7 @@ public class ServerChatApplicationTest {
 	public void tearDown() throws Exception {
 		server.stop();
 		server.clean();
-		Mockito.verify(connection).stop();
+		Mockito.verify(connection, Mockito.atLeastOnce()).stop();
 	}
 	
 	private void sendToServer(String sender, Exchange exchange) {
@@ -67,8 +67,14 @@ public class ServerChatApplicationTest {
 		serverConsumer.accept(sender, payload);
 	}
 	
+	private void restartServer() {
+		server.stop();
+		server = new ServerChatApplication(serverAddress);
+		server.startWithMockConnection(connection);
+	}
+	
 	@Test
-	public void testClientLoginRoomAnnouncements() {
+	public void testClientLoginRoomAnnouncements() throws InterruptedException {
 		sendToServer("David", new ConnectRequest());
 		sendToServer("Shaul", new ConnectRequest());
 		
@@ -309,5 +315,72 @@ public class ServerChatApplicationTest {
 		GetClientsInRoomResponse response = (GetClientsInRoomResponse) codec.decode(argument.getValue());
 		assertEquals(0, response.clients.size());
 	}
+	
+	@Test
+	public void DisconnectedClientsAreNotInRooms() {
+		sendToServer("David", new ConnectRequest());
+		sendToServer("Shaul", new ConnectRequest());
+		sendToServer("Shlomo", new ConnectRequest());
+		
+		sendToServer("David", new JoinRoomRequest("Kings"));
+		sendToServer("Shaul", new JoinRoomRequest("Kings"));
+		sendToServer("Shlomo", new JoinRoomRequest("Kings"));
+		
+		sendToServer("Shaul", new DisconnectRequest());
+		
+		sendToServer("David", new GetClientsInRoomRequest("Kings"));
 
+		ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send(
+				Mockito.eq("David"), argument.capture());
+		GetClientsInRoomResponse response = (GetClientsInRoomResponse) codec.decode(argument.getValue());
+		assertEquals(2, response.clients.size());
+		assertTrue(response.clients.containsAll(Arrays.asList("David", "Shlomo")));
+	}
+	
+	@Test
+	public void ReconnectedClientsAreInRooms() {
+		sendToServer("David", new ConnectRequest());
+		sendToServer("Shaul", new ConnectRequest());
+		sendToServer("Shlomo", new ConnectRequest());
+		
+		sendToServer("David", new JoinRoomRequest("Kings"));
+		sendToServer("Shaul", new JoinRoomRequest("Kings"));
+		sendToServer("Shlomo", new JoinRoomRequest("Kings"));
+		
+		// Disconnect and reconnect Shaul.
+		sendToServer("Shaul", new DisconnectRequest());
+		sendToServer("Shaul", new ConnectRequest());
+		
+		sendToServer("David", new GetClientsInRoomRequest("Kings"));
+
+		ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send(
+				Mockito.eq("David"), argument.capture());
+		GetClientsInRoomResponse response = (GetClientsInRoomResponse) codec.decode(argument.getValue());
+		assertEquals(3, response.clients.size());
+		assertTrue(response.clients.containsAll(Arrays.asList("David", "Shlomo", "Shaul")));
+	}
+	
+	@Test
+	public void RoomsOfClientArePersistent() {
+		sendToServer("David", new ConnectRequest());
+		
+		sendToServer("David", new JoinRoomRequest("Kings"));
+		sendToServer("David", new JoinRoomRequest("Ushpizin"));
+		sendToServer("David", new DisconnectRequest());
+		
+		restartServer();
+		
+		sendToServer("David", new ConnectRequest());
+		
+		sendToServer("David", new GetJoinedRoomsRequest());
+
+		ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+		Mockito.verify(connection, Mockito.atLeastOnce()).send(
+				Mockito.eq("David"), argument.capture());
+		GetJoinedRoomsResponse response = (GetJoinedRoomsResponse) codec.decode(argument.getValue());
+		assertEquals(2, response.joinedRooms.size());
+		assertTrue(response.joinedRooms.containsAll(Arrays.asList("Kings", "Ushpizin")));
+	}
 }
