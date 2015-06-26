@@ -6,7 +6,6 @@ import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -20,8 +19,8 @@ public class TChatTest {
 	private ServerChatApplication server = new ServerChatApplication("Server");
 	private Collection<ClientChatApplication> clients = new LinkedList<>();
 	// all listened to incoming messages will be written here
-	private Map<String, BlockingQueue<RoomAnnouncement>> announcements = new HashMap<String, BlockingQueue<RoomAnnouncement>>();
-	private Map<String, BlockingQueue<ChatMessage>> messages = new HashMap<String, BlockingQueue<ChatMessage>>();
+	private Map<String, BlockingQueue<RoomAnnouncement>> announcements = new HashMap<>();
+	private Map<String, BlockingQueue<ChatMessage>> messages = new HashMap<>();
 
 	@Before
 	public void setup() {
@@ -73,7 +72,6 @@ public class TChatTest {
 
 	private ClientChatApplication loginUser(String name) {
 		ClientChatApplication $ = new ClientChatApplication(server.getAddress(), name);
-		clients.add($);
 		announcements.put(name, new LinkedBlockingQueue<>());
 		messages.put(name, new LinkedBlockingQueue<>());
 		$.login(x -> messages.get(name).add(x), x -> announcements.get(name).add(x));
