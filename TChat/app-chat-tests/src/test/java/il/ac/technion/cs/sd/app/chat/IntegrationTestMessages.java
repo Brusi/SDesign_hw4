@@ -153,13 +153,15 @@ public class IntegrationTestMessages {
 		
 		
 		client1.sendMessage("Kings", "Hello kings!");
-		client1.sendMessage("Kings", "Hello redheads!");
+		client1.sendMessage("Redheads", "Hello redheads!");
 		
 		ChatMessage expected1 = new ChatMessage("David", "Kings", "Hello kings!"); 
 		ChatMessage expected2 = new ChatMessage("David", "Redheads", "Hello redheads!");
 		
 		assertEquals(expected1, messages.get("Shaul").take());
 		assertEquals(expected2, messages.get("Ron").take());
+		assertTrue(messages.get("Ron").isEmpty());
+		assertTrue(messages.get("Shaul").isEmpty());
 	}
 	
 	@Test
