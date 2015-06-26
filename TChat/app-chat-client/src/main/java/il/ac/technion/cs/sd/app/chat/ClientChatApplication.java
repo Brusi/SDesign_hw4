@@ -66,7 +66,6 @@ public class ClientChatApplication {
 		}
 	}
 	
-	// TODO update doc with connection argument
 	/**
 	 * Creates a new application, tied to a single user
 	 * 
@@ -74,6 +73,7 @@ public class ClientChatApplication {
 	 *            receiving messages
 	 * @param username The username that will be sending and accepting the messages
 	 *            using this object
+	 * @param connection A custom user-defined communication library to be used by application
 	 */
 	public ClientChatApplication(String serverAddress, String username, ClientCommunicationsLibrary connection) {
 		assertNotNullOrEmpty(username);
@@ -86,8 +86,6 @@ public class ClientChatApplication {
 		this.responseSemaphore = new Semaphore(0);
 		this.myCodec = new XStreamCodec<Exchange>();
 	}
-	
-	
 	
 	
 	/**
@@ -130,8 +128,14 @@ public class ClientChatApplication {
 		this.isLoggedIn = true;
 	}
 
-	
-	private Object handleIncoming(String s) {
+	/**
+	 * Callback for handling all incoming messages to this client from its server, to be used as
+	 * a Consumer for ClientCommunicationLibrary initialization.
+	 * 
+	 * @param s Raw incoming message
+	 * @return dummy object (should not be used - always null).
+	 */
+	protected Object handleIncoming(String s) {
 		Exchange ex = myCodec.decode(s);
 		ex.accept(myVisitor);
 		
@@ -180,7 +184,9 @@ public class ClientChatApplication {
 	 */
 	public void logout() {
 		loggedInOrException();
-		syncSend(new DisconnectRequest());
+		
+		this.connection.send(myCodec.encode(new DisconnectRequest()));
+		
 		this.isLoggedIn = false;
 	}
 
@@ -199,7 +205,10 @@ public class ClientChatApplication {
 		ChatMessage msg = new ChatMessage(myUsername, room, what);
 		SendMessageRequest request = new SendMessageRequest(msg);
 		
-		connection.send(myCodec.encode(request));
+		syncSend(request);
+		if (!this.opResponse) {
+			throw new NotInRoomException();
+		}
 	}
 
 	
@@ -249,7 +258,10 @@ public class ClientChatApplication {
 	 * was logged in.
 	 */
 	public void stop() {
-		connection.stop();
+		if (null != this.connection) {
+			connection.stop();
+			this.connection = null;
+		}
 	}
 
 	
@@ -323,6 +335,9 @@ public class ClientChatApplication {
 		public void visit(AnnouncementRequest request) {
 			announcementConsumer.accept(request.announcement);
 		}
-		
+	}
+
+	public String getUsername() {
+		return myUsername;
 	}
 }

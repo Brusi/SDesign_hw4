@@ -1,13 +1,19 @@
 package il.ac.technion.cs.sd.app.chat;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
+import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
+import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
 import il.ac.technion.cs.sd.msg.ClientCommunicationsLibrary;
+import il.ac.technion.cs.sd.msg.ReliableMessenger;
 
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.Timeout;
 import org.mockito.Mockito;
 
 public class ClientChatApplicationTest {
@@ -16,6 +22,10 @@ public class ClientChatApplicationTest {
 	private LinkedBlockingQueue<RoomAnnouncement> announcements = new LinkedBlockingQueue<>();
 	private ClientCommunicationsLibrary mockConnection = Mockito.mock(ClientCommunicationsLibrary.class);
 	private ClientChatApplication capp;
+	private Codec<Exchange> myCodec = new XStreamCodec<>();
+	
+	@Rule public Timeout globaltime = Timeout.millis(1000L);
+	
 	
 	@Before
 	public void setUp() throws Exception {
@@ -44,162 +54,234 @@ public class ClientChatApplicationTest {
 	/////////// NEGATIVE TESTS ////////////
 	///////////////////////////////////////
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantCreateAppWithNullServer() {
-		fail("Not yet implemented");
+		new ClientChatApplication(null, "dummy");
 	}
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantCreateAppWithEmptyServer() {
-		fail("Not yet implemented");
+		new ClientChatApplication("", "dummy");
 	}
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantCreateAppWithNullAddress() {
-		fail("Not yet implemented");
+		new ClientChatApplication("dummy", null);
 	}
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantCreateAppWithEmptyAddress() {
-		fail("Not yet implemented");
+		new ClientChatApplication("dummy", "");
 	}
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantLoginWithNullMessageConsumer() {
-		fail("Not yet implemented");
+		capp.logout();
+		capp.login(x -> {}, null);
 	}
 	
-	@Test
+	@Test (expected=IllegalArgumentException.class)
 	public void cantLoginWithNullAnnouncementConsumer() {
-		fail("Not yet implemented");
+		capp.logout();
+		capp.login(null, x -> {});
 	}
 	
-	@Test
-	public void failureToJoinRoomThrowsException() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantJoinNullRoom() throws Exception {
+		capp.joinRoom(null);
 	}
 	
-	@Test
-	public void cantJoinNullRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantJoinEmptyNamedRoom() throws Exception {
+		capp.joinRoom("");
 	}
 	
-	@Test
-	public void cantJoinEmptyNamedRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantLeaveNullRoom() throws Exception {
+		capp.leaveRoom(null);
 	}
 	
-	@Test
-	public void cantLeaveNullRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantLeaveEmptyNamedRoom() throws Exception {
+		capp.leaveRoom("");
 	}
 	
-	@Test
-	public void cantLeaveEmptyNamedRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantGetClientsOfNullRoom() throws Exception {
+		capp.getClientsInRoom(null);
 	}
 	
-	@Test
-	public void failureToLeaveRoomThrowsException() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantGetClientsOfEmptyNamedRoom() throws Exception {
+		capp.getClientsInRoom("");
 	}
 	
-	@Test
-	public void stopKillsTheConnection() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantSendNullMessage() throws Exception {
+		capp.sendMessage("room", null);
 	}
 	
-	@Test
-	public void failureToGetClientsInRoomThrowsException() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantSendEmptyMessage() throws Exception {
+		capp.sendMessage("room", "");
 	}
 	
-	@Test
-	public void cantGetClientsOfNullRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantSendMessageToNullRoom() throws Exception {
+		capp.sendMessage(null, "what");
 	}
 	
-	@Test
-	public void cantGetClientsOfEmptyNamedRoom() {
-		fail("Not yet implemented");
+	@Test (expected=IllegalArgumentException.class)
+	public void cantSendMessageToEmptyNamedRoom() throws Exception {
+		capp.sendMessage("", "what");
 	}
 	
-	@Test
-	public void cantSendNullMessage() {
-		fail("Not yet implemented");
+	@Test (expected=RuntimeException.class)
+	public void cantSendMessageWhenNotLoggedIn() throws Exception {
+		capp.logout();
+		capp.sendMessage("room", "what");
 	}
 	
-	@Test
-	public void cantSendEmptyMessage() {
-		fail("Not yet implemented");
+	@Test (expected=RuntimeException.class)
+	public void cantJoinRoomWhenNotLoggedIn() throws Exception {
+		capp.logout();
+		capp.joinRoom("room");
 	}
 	
-	@Test
-	public void cantSendMessageToNullRoom() {
-		fail("Not yet implemented");
+	@Test (expected=RuntimeException.class)
+	public void cantLeaveRoomWhenNotLoggedIn() throws Exception {
+		capp.logout();
+		capp.leaveRoom("room");
 	}
 	
-	@Test
-	public void cantSendMessageToEmptyNamedRoom() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void cantSendMessageWhenNotLoggedIn() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void cantJoinRoomWhenNotLoggedIn() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void cantLeaveRoomWhenNotLoggedIn() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
+	@Test (expected=RuntimeException.class)
 	public void cantGetJoinedRoomsWhenNotLoggedIn() {
-		fail("Not yet implemented");
+		capp.logout();
+		capp.getJoinedRooms();
 	}
 	
-	@Test
+	@Test (expected=RuntimeException.class)
 	public void cantGetAllRoomsWhenNotLoggedIn() {
-		fail("Not yet implemented");
+		capp.logout();
+		capp.getAllRooms();
 	}
 	
-	@Test
-	public void cantGetClientsInRoomWhenNotLoggedIn() {
-		fail("Not yet implemented");
+	@Test (expected=RuntimeException.class)
+	public void cantGetClientsInRoomWhenNotLoggedIn() throws Exception {
+		capp.logout();
+		capp.getClientsInRoom("room");
 	}
+
+	// TODO exceptions on non-expected exchanges
 	
 	
 	///////////////////////////////////////
 	/////////// POSITIVE TESTS ////////////
 	///////////////////////////////////////
-
-	@Test
-	public void sendMessageIsNonBlocking() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void clientReceivesHisOwnSendMessage() {
-		fail("Not yet implemented");
-	}
 	
 	@Test
 	public void clientReceivesOtherLeavingAnnouncements() {
-		fail("Not yet implemented");
+		RoomAnnouncement leaveAnnouncement = new RoomAnnouncement("someone", "room", Announcement.LEAVE);
+		sendAnnouncementToClient(leaveAnnouncement);
+		
+		assertTrue(announcements.contains(leaveAnnouncement));
 	}
 	
 	@Test
 	public void clientReceivesOtherJoiningAnnouncements() {
-		fail("Not yet implemented");
+		RoomAnnouncement joinAnnouncement = new RoomAnnouncement("someone", "room", Announcement.JOIN);
+		sendAnnouncementToClient(joinAnnouncement);
+		
+		assertTrue(announcements.contains(joinAnnouncement));
+	}
+	
+	@Test
+	public void clientReceivesOtherDisconnectingAnnouncements() {
+		RoomAnnouncement joinAnnouncement = new RoomAnnouncement("someone", "room", Announcement.DISCONNECT);
+		sendAnnouncementToClient(joinAnnouncement);
+		
+		assertTrue(announcements.contains(joinAnnouncement));
+	}
+	
+	@Test
+	public void stopKillsTheConnection() {
+		capp.stop();
+		
+		// should be able to create a new messenger with previously used address
+		ReliableMessenger m = new ReliableMessenger(capp.getUsername(), x -> {});
+		m.kill();
+	}
+	
+	/* OperationResponse methods */
+	
+	@Test (expected=NotInRoomException.class)
+	public void failureToLeaveRoomThrowsException() throws Exception {
+		getTimedOperationFailureInBackground(5L);
+		
+		capp.leaveRoom("not_in_room");
+	}
+	
+	@Test (expected=NotInRoomException.class)
+	public void failureToSendThrowsException() throws Exception {
+		getTimedOperationFailureInBackground(5L);
+		
+		capp.sendMessage("room", "what");
+		fail("should have thrown exception");
+	}
+	
+	@Test (expected=AlreadyInRoomException.class)
+	public void failureToJoinRoomThrowsException() throws Exception {
+		getTimedOperationFailureInBackground(5L);
+		
+		capp.joinRoom("some_room");
+	}
+	
+	/* List-Response methods */
+	
+	@Test (expected=NoSuchRoomException.class)
+	public void failureToGetClientsInRoomThrowsException() throws Exception {
+		getEmptyListInBackground(5L);
+		
+		capp.getClientsInRoom("some_room");
+	}
+
+	
+	///////////////////////////////////////
+	/////////// HELPER UTILITIES //////////
+	///////////////////////////////////////
+	
+	private void getEmptyListInBackground(long delay) {
+		new Thread(() -> {
+			try {
+				// let main thread try to leave room and block
+				Thread.yield();
+				Thread.sleep(delay);
+			} catch (Exception e) {}
+			
+			// get false operation response
+			capp.handleIncoming(myCodec.encode(new GetClientsInRoomResponse(new ArrayList<String>())));
+		}).start();
+	}
+
+	private void sendAnnouncementToClient(RoomAnnouncement leaveAnnouncement) {
+		Exchange ex = new AnnouncementRequest(leaveAnnouncement);
+		capp.handleIncoming(myCodec.encode(ex));
 	}
 	
 	
+
+	private void getTimedOperationFailureInBackground(long delay) {
+		new Thread(() -> {
+			try {
+				// let main thread try to leave room and block
+				Thread.yield();
+				Thread.sleep(delay);
+			} catch (Exception e) {}
+			
+			// get false operation response
+			capp.handleIncoming(myCodec.encode(OperationResponse.FAILURE));
+		}).start();
+	}
 	
 	/**
 	 * interface to test:
