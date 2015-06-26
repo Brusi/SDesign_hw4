@@ -50,6 +50,9 @@ public class ServerData {
 		// Disconnect client to all rooms he is signed to:
 		for (String room : getRoomsOfClient(client)) {
 			clientsInRoom.get(room).remove(client);
+			if (clientsInRoom.get(room).isEmpty()) {
+				clientsInRoom.remove(room);
+			}
 		}
 	}
 
