@@ -149,7 +149,6 @@ public class ServerChatApplication {
 		if (!data.isClientConnected(client)) {
 			return;
 		}
-		System.out.println(codec.encode(exchange));
 		connection.send(client, codec.encode(exchange));
 	}
 	

@@ -161,4 +161,23 @@ public class IntegrationTestMessages {
 		assertEquals(expected1, messages.get("Shaul").take());
 		assertEquals(expected2, messages.get("Ron").take());
 	}
+	
+	@Test
+	public void messageNotSentToSelf() throws AlreadyInRoomException, NotInRoomException, InterruptedException {
+		ClientChatApplication client1 = buildClient("David"); 
+		ClientChatApplication client2 = buildClient("Shaul");
+		ClientChatApplication client3 = buildClient("Ron");
+		
+		client1.joinRoom("Kings");
+		client2.joinRoom("Kings");
+		
+		client1.joinRoom("Redheads");
+		client3.joinRoom("Redheads");
+		
+		
+		client1.sendMessage("Kings", "Hello kings!");
+		client1.sendMessage("Kings", "Hello redheads!");
+		
+		assertTrue(messages.get("David").isEmpty());
+	}
 }

@@ -93,4 +93,19 @@ public class IntegrationTestAnnouncements {
 		assertEquals(new RoomAnnouncement("Shaul", "Kings", Announcement.DISCONNECT),
 				announcements.get("David").take());
 	}
+	
+	@Test
+	public void checkThatAnnouncementNotSentToSelf() throws AlreadyInRoomException, InterruptedException, NotInRoomException {
+		ClientChatApplication client1 = buildClient("David"); 
+		ClientChatApplication client2 = buildClient("Shaul");
+		
+		client1.joinRoom("Kings");
+		
+		client2.joinRoom("Kings");
+		client2.leaveRoom("Kings");
+		client2.joinRoom("Kings");
+		client2.logout();
+		
+		assertTrue(announcements.get("Shaul").isEmpty());
+	}
 }
