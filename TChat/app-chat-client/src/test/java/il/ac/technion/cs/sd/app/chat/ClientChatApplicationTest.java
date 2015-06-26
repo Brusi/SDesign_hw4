@@ -2,10 +2,7 @@ package il.ac.technion.cs.sd.app.chat;
 
 import static org.junit.Assert.*;
 import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
-import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
-import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
+import il.ac.technion.cs.sd.app.chat.exchange.*;
 import il.ac.technion.cs.sd.msg.ClientCommunicationsLibrary;
 import il.ac.technion.cs.sd.msg.ReliableMessenger;
 
@@ -172,7 +169,41 @@ public class ClientChatApplicationTest {
 		capp.getClientsInRoom("room");
 	}
 
-	// TODO exceptions on non-expected exchanges
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleConnectRequest() {
+		capp.handleIncoming(myCodec.encode(new ConnectRequest()));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleDisconnectRequest() {
+		capp.handleIncoming(myCodec.encode(new DisconnectRequest()));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleJoinRoomRequest() {
+		capp.handleIncoming(myCodec.encode(new JoinRoomRequest("room")));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleLeaveRoomRequest() {
+		capp.handleIncoming(myCodec.encode(new LeaveRoomRequest("room")));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleGetJoinedRoomsRequest() {
+		capp.handleIncoming(myCodec.encode(new GetJoinedRoomsRequest()));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleGetAllRoomsRequest() {
+		capp.handleIncoming(myCodec.encode(new GetAllRoomsRequest()));
+	}
+	
+	@Test (expected=UnsupportedOperationException.class)
+	public void cantHandleGetClientsInRoomRequest() {
+		capp.handleIncoming(myCodec.encode(new GetClientsInRoomRequest("room")));
+	}
+	
 	
 	
 	///////////////////////////////////////
