@@ -43,6 +43,9 @@ public class ServerChatApplication {
      */
 
 	public ServerChatApplication(String name) {
+		if (name == null || name.isEmpty()) {
+			throw new IllegalArgumentException();
+		}
 		this.serverAddress = name;
 		this.dataSaver = new XStreamDataSaver<ServerData>(serverAddress);
 	}
@@ -78,6 +81,9 @@ public class ServerChatApplication {
 	 * @param mockConnection
 	 */
 	void startWithMockConnection(ServerCommunicationsLibrary mockConnection) {
+		if (mockConnection == null) {
+			throw new IllegalArgumentException();
+		}
 		this.connection = mockConnection; 
 		startConnection();
 		loadData();

@@ -73,6 +73,16 @@ public class ServerChatApplicationTest {
 		server.startWithMockConnection(connection);
 	}
 	
+	@Test (expected=IllegalArgumentException.class)
+	public void checkNameNotNull() {
+		ServerChatApplication myServer = new ServerChatApplication(null); 
+	}
+	
+	@Test (expected=IllegalArgumentException.class)
+	public void checkNameNotEmpty() {
+		ServerChatApplication myServer = new ServerChatApplication(""); 
+	}
+	
 	@Test
 	public void testClientLoginRoomAnnouncements() throws InterruptedException {
 		sendToServer("David", new ConnectRequest());
