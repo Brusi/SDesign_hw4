@@ -1,7 +1,7 @@
 package il.ac.technion.cs.sd.app.chat;
 
-import static org.junit.Assert.*;
-import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +22,6 @@ public class IntegrationTestMessages {
 	
 	private Map<String, BlockingQueue<RoomAnnouncement>> announcements = new HashMap<String, BlockingQueue<RoomAnnouncement>>();
 	private Map<String, BlockingQueue<ChatMessage>> messages = new HashMap<String, BlockingQueue<ChatMessage>>();
-	
 	private Set<ClientChatApplication> clients = new HashSet<ClientChatApplication>();
 	
 	private ClientChatApplication buildClient(String login) {
@@ -34,10 +33,9 @@ public class IntegrationTestMessages {
 				announcement -> announcements.get(login).add(announcement));
 		
 		clients.add($);
-		
 		return $;
-		
 	}
+
 	
 	@Before
 	public void setp() {
@@ -72,8 +70,8 @@ public class IntegrationTestMessages {
 		
 		ChatMessage expected = new ChatMessage("David", "Kings", "Hello there"); 
 		
-		assertEquals(expected, announcements.get("Shaul").take());
-		assertEquals(expected, announcements.get("Shlomo").take());
+		assertEquals(expected, messages.get("Shaul").take());
+		assertEquals(expected, messages.get("Shlomo").take());
 	}
 	
 	@Test
@@ -90,8 +88,8 @@ public class IntegrationTestMessages {
 		
 		ChatMessage expected = new ChatMessage("David", "Kings", "Hello only kings!"); 
 		
-		assertEquals(expected, announcements.get("Shaul").take());
-		assertTrue(announcements.get("Shmuel").isEmpty());
+		assertEquals(expected, messages.get("Shaul").take());
+		assertTrue(messages.get("Shmuel").isEmpty());
 	}
 	
 	@Test
