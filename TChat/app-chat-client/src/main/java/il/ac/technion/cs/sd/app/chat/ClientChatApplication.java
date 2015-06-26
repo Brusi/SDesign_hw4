@@ -183,9 +183,9 @@ public class ClientChatApplication {
 	 * A logged out message will be sent to all the <i>other</i> clients in rooms with the client.
 	 */
 	public void logout() {
-		loggedInOrException();
-		
-		this.connection.send(myCodec.encode(new DisconnectRequest()));
+		if (this.isLoggedIn) {
+			this.connection.send(myCodec.encode(new DisconnectRequest()));
+		}
 		
 		this.isLoggedIn = false;
 	}
