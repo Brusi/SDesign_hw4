@@ -114,7 +114,7 @@ public class ServerChatApplication {
 	
 	/**
 	 * Send an announcement to all the client's rooms. The announcement may be
-	 * different for each room, and is defined by the function roomAnnouncement,
+	 * different for each room, and is defined by the function roomAnnouncementMap,
 	 * which maps room name too the the appropriate announcement.
 	 * 
 	 * @param client the client to send the announcement to all its rooms.
@@ -122,17 +122,20 @@ public class ServerChatApplication {
 	 */
 	private void announceInAllRoomsOfAClient(String client, Function<String, AnnouncementRequest> roomAnnouncementMap) {
 		for (String room : data.getRoomsOfClient(client)) {
-			broadcastToRoom(room, roomAnnouncementMap.apply(room));
+			broadcastToRoom(client, room, roomAnnouncementMap.apply(room));
 		}
 	}
 	
 	/**
-	 * Broadcast an exchange to all (online) members of a room.
+	 * Broadcast an exchange to all (online) members of a room, except for the sender.
 	 * @param room the room to send the message to its members.
 	 * @param exchange the message to send.
 	 */
-	private void broadcastToRoom(String room, Exchange exchange) {
+	private void broadcastToRoom(String sender, String room, Exchange exchange) {
 		for (String client : data.getClientsInRoom(room)) {
+			if (client.equals(sender)) {
+				continue;
+			}
 			sendIfOnline(client, exchange);
 		}
 	}
@@ -182,7 +185,7 @@ public class ServerChatApplication {
 				return;
 			}
 			// Broadcast message to all room members.
-			broadcastToRoom(request.message.room, request);	
+			broadcastToRoom(client, request.message.room, request);	
 			// Send a successful response to the client.
 			sendIfOnline(client, OperationResponse.SUCCESS);
 		}
@@ -196,7 +199,7 @@ public class ServerChatApplication {
 			}
 			data.joinRoom(client, request.room);
 			sendIfOnline(client, OperationResponse.SUCCESS);
-			broadcastToRoom(request.room, new AnnouncementRequest(
+			broadcastToRoom(client, request.room, new AnnouncementRequest(
 					new RoomAnnouncement(client, request.room,Announcement.JOIN)));
 		}
 
@@ -209,7 +212,7 @@ public class ServerChatApplication {
 			}
 			data.leaveRoom(client, request.room);
 			sendIfOnline(client, OperationResponse.SUCCESS);
-			broadcastToRoom(request.room, new AnnouncementRequest(
+			broadcastToRoom(client, request.room, new AnnouncementRequest(
 					new RoomAnnouncement(client, request.room, Announcement.LEAVE)));
 		}
 
