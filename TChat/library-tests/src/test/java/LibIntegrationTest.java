@@ -2,7 +2,6 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 
 import il.ac.technion.cs.sd.msg.ClientCommunicationsLibrary;
 import il.ac.technion.cs.sd.msg.ServerCommunicationsLibrary;
@@ -56,7 +55,6 @@ public class LibIntegrationTest {
 			try {
 				Thread.sleep(400);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			server.sendReply(clientAddress, "Blue");
