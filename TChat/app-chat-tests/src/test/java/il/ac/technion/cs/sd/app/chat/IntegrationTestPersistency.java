@@ -85,6 +85,8 @@ public class IntegrationTestPersistency {
 		
 		restartServer();
 		
+		Thread.sleep(10);
+		
 		loginClient(client1, "David");
 		loginClient(client2, "Shaul");
 		
