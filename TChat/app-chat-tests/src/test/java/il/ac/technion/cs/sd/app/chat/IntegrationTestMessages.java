@@ -120,7 +120,7 @@ public class IntegrationTestMessages {
 		
 		client1.sendMessage("Kings", "Hello only kings!");
 		
-		assertTrue(announcements.get("Shaul").isEmpty());
+		assertTrue(messages.get("Shaul").isEmpty());
 	}
 	
 	@Test
@@ -135,7 +135,7 @@ public class IntegrationTestMessages {
 		
 		client1.sendMessage("Kings", "Hello only kings!");
 		
-		assertTrue(announcements.get("Shaul").isEmpty());
+		assertTrue(messages.get("Shaul").isEmpty());
 	}
 	
 	
@@ -158,7 +158,7 @@ public class IntegrationTestMessages {
 		ChatMessage expected1 = new ChatMessage("David", "Kings", "Hello kings!"); 
 		ChatMessage expected2 = new ChatMessage("David", "Redheads", "Hello redheads!");
 		
-		assertEquals(expected1, announcements.get("Shaul").take());
-		assertEquals(expected2, announcements.get("Ron").take());
+		assertEquals(expected1, messages.get("Shaul").take());
+		assertEquals(expected2, messages.get("Ron").take());
 	}
 }
