@@ -35,6 +35,9 @@ public class ServerData {
 		onlineClients.add(client);
 		// Connect client to all rooms he is signed to:
 		for (String room : getRoomsOfClient(client)) {
+			if (!clientsInRoom.containsKey(room)) {
+				clientsInRoom.put(room, new HashSet<String>());
+			}
 			clientsInRoom.get(room).add(client);
 		}
 	}
