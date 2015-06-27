@@ -66,15 +66,6 @@ public class ServerChatApplication {
 		startConnection();
 		loadData();
 	}
-	
-	private void loadData() {
-		Optional<ServerData> loaded_data = dataSaver.load();
-		if (loaded_data.isPresent()) {
-			data = loaded_data.get();
-		} else {
-			data = new ServerData();
-		}
-	}
 
 	/**
 	 * Starts the server app using a mock communication library. Used for unit testing.
@@ -87,6 +78,18 @@ public class ServerChatApplication {
 		this.connection = mockConnection; 
 		startConnection();
 		loadData();
+	}
+	
+	/**
+	 * Load the persistent server state from disc.
+	 */
+	private void loadData() {
+		Optional<ServerData> loaded_data = dataSaver.load();
+		if (loaded_data.isPresent()) {
+			data = loaded_data.get();
+		} else {
+			data = new ServerData();
+		}
 	}
 	
 	/**
