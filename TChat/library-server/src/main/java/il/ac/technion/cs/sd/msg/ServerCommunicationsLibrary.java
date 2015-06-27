@@ -82,7 +82,7 @@ public class ServerCommunicationsLibrary {
 	 * the request queue  
 	 * @param messenger the serverLibrary will use this as the messenger 
 	 */
-	public void start(ReliableMessenger messenger){
+	public void startWithMockMessenger(ReliableMessenger messenger){
 		if(!isStopped){
 			throw new RuntimeException("tried to start communications library while already running");
 		}

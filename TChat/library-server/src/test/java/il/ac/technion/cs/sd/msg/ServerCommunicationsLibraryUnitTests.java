@@ -19,7 +19,7 @@ public class ServerCommunicationsLibraryUnitTests {
 	@Before
 	public void setUp(){
 		if(serverLibrary.isStopped())
-		serverLibrary.start(mockMessenger);
+		serverLibrary.startWithMockMessenger(mockMessenger);
 	}
 	
 	@Test(expected= RuntimeException.class)
