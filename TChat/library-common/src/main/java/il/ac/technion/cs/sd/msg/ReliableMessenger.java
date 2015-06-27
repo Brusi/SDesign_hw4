@@ -53,6 +53,7 @@ public class ReliableMessenger {
 			messenger = new MessengerFactory().start(user, reliableAction);
 		} catch (MessengerException e) {
 			//e.printStackTrace();
+			System.out.println(e.getLocalizedMessage());
 			throw new RuntimeException("Failed to initialize messenger");
 		}
 	}

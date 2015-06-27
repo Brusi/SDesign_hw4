@@ -1,8 +1,5 @@
 package il.ac.technion.cs.sd.app.chat;
 
-import static org.junit.Assert.*;
-import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

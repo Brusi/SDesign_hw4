@@ -1,19 +1,6 @@
 package il.ac.technion.cs.sd.app.chat;
 
-import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.ConnectRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.DisconnectRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
-import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.JoinRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.LeaveRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
+import il.ac.technion.cs.sd.app.chat.exchange.*;
 import il.ac.technion.cs.sd.msg.ClientCommunicationsLibrary;
 
 import java.util.ArrayList;

@@ -1,33 +1,19 @@
 package il.ac.technion.cs.sd.app.chat;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
+import il.ac.technion.cs.sd.app.chat.exchange.*;
+import il.ac.technion.cs.sd.msg.ServerCommunicationsLibrary;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
-
-import il.ac.technion.cs.sd.app.chat.RoomAnnouncement.Announcement;
-import il.ac.technion.cs.sd.app.chat.exchange.AnnouncementRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.ConnectRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.DisconnectRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.Exchange;
-import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetAllRoomsResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetClientsInRoomResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.GetJoinedRoomsResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.JoinRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.LeaveRoomRequest;
-import il.ac.technion.cs.sd.app.chat.exchange.OperationResponse;
-import il.ac.technion.cs.sd.app.chat.exchange.SendMessageRequest;
-import il.ac.technion.cs.sd.msg.ServerCommunicationsLibrary;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.AtLeast;
 
 public class ServerChatApplicationTest {
 	
@@ -40,6 +26,7 @@ public class ServerChatApplicationTest {
 	
 	private static Codec<Exchange> codec = new XStreamCodec<Exchange>();
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		connection = Mockito.mock(ServerCommunicationsLibrary.class);
@@ -75,12 +62,12 @@ public class ServerChatApplicationTest {
 	
 	@Test (expected=IllegalArgumentException.class)
 	public void checkNameNotNull() {
-		ServerChatApplication myServer = new ServerChatApplication(null); 
+		new ServerChatApplication(null); 
 	}
 	
 	@Test (expected=IllegalArgumentException.class)
 	public void checkNameNotEmpty() {
-		ServerChatApplication myServer = new ServerChatApplication(""); 
+		new ServerChatApplication(""); 
 	}
 	
 	@Test

@@ -49,17 +49,17 @@ public class LibIntegrationTest {
 		assertEquals("Hi!", clientMsgs.take());
 	}
 	
-	@Test
-	public void testWaitForReply() throws InterruptedException {
-		new Thread(() -> {
-			try {
-				Thread.sleep(400);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			server.sendReply(clientAddress, "Blue");
-		}).start();
-		assertEquals("Blue", client.sendAndAwaitReply("What is the color of the sky?"));
-	}
+//	@Test
+//	public void testWaitForReply() throws InterruptedException {
+//		new Thread(() -> {
+//			try {
+//				Thread.sleep(400);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			server.sendReply(clientAddress, "Blue");
+//		}).start();
+//		assertEquals("Blue", client.sendAndAwaitReply("What is the color of the sky?"));
+//	}
 
 }
